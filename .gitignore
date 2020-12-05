@@ -1,0 +1,10 @@
+repo
+**/dist
+**/obj
+**/bin
+*.tgz
+*.exe
+*.pspec
+index.json
+index.sha256sum
+
