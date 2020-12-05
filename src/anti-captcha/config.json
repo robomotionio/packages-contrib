@@ -1,0 +1,42 @@
+{
+    "name": "Anti Captcha",
+    "namespace": "Robomotion.AntiCaptcha",
+    "version": "0.1.8",
+    "category": 6,
+    "description": "Anti Captch entegration",
+    "icon": "https://storage.googleapis.com/latif-repository/anticaptcha-icon.png",
+    "keywords": [
+        "Anti Captcha",
+        "Captcha"
+    ],
+    "language": "Go",
+    "platforms": [
+        "linux",
+        "windows",
+        "darwin"
+    ],
+    "author": {
+        "email": "support@robomotion.io",
+        "name": "Robomotion RPA"
+    },
+    "scripts": {
+        "windows": {
+            "build": [
+                "go build -o dist/anticaptcha.exe"
+            ],
+            "run": "anticaptcha.exe"
+        },
+        "linux": {
+            "build": [
+                "go build -o dist/anticaptcha"
+            ],
+            "run": "anticaptcha"
+        },
+        "darwin": {
+            "build": [
+                "go build -o dist/anticaptcha"
+            ],
+            "run": "anticaptcha"
+        }
+    }
+}
