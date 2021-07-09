@@ -10,13 +10,25 @@
 	"language": "Python", 
 	"name": "Fuzzy Matcher",
     "namespace": "Robomotion.FuzzyMatcher",
-    "platforms": ["windows"],
+    "platforms": ["windows","linux","darwin"],
     "scripts": {
         "windows": {
             "build": [
                 "pyinstaller --onefile main.py -n fuzzymatcher.exe"
             ],
             "run": "fuzzymatcher.exe"
+        },
+        "linux": {
+            "build": [
+                "pyinstaller --onefile main.py -n fuzzymatcher"
+            ],
+            "run": "fuzzymatcher"
+        },
+        "darwin": {
+            "build": [
+                "pyinstaller --onefile main.py -n fuzzymatcher"
+            ],
+            "run": "fuzzymatcher"
         }
     },
     "version": "1.0.0"
