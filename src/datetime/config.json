@@ -1,0 +1,44 @@
+{
+	"name": "Date Time",
+	"namespace": "Robomotion.DateTime",
+	"version": "0.0.1",
+	"category": 6,
+	"description": "Date time functions and conversions. Icons made by [Vectors Market](https://www.flaticon.com/authors/vectors-market) from [Flaticon](www.flaticon.com/)",
+	"icon": "icon.png",
+	"keywords": [
+		"date",
+		"time",
+		"now",
+		"timespan"
+	],
+	"language": "Go",
+	"platforms": [
+		"linux",
+		"windows",
+		"darwin"
+	],
+	"author": {
+		"email": "support@robomotion.io",
+		"name": "Robomotion"
+	},
+	"scripts": {
+		"windows": {
+			"build": [
+				"go build -o dist/robomotion-datetime.exe"
+			],
+			"run": "robomotion-datetime.exe"
+		},
+		"linux": {
+			"build": [
+				"go build -o dist/robomotion-datetime"
+			],
+			"run": "robomotion-datetime"
+		},
+		"darwin": {
+			"build": [
+				"go build -o dist/robomotion-datetime"
+			],
+			"run": "robomotion-datetime"
+		}
+	}
+}

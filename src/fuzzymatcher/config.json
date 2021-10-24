@@ -1,0 +1,35 @@
+{
+    "author": {
+		"name": "Robomotion IO",
+		"email": "support@robomotion.io"
+	},
+    "category": 1,
+    "description": "It finds the similartiy of 2 strings",
+    "icon": "https://storage.googleapis.com/latif-repository/fuzzy_matcher/fuzzy_matcher_icon.png",
+    "keywords": ["robomotion", "rpa", "plugin", "example"],
+	"language": "Python", 
+	"name": "Fuzzy Matcher",
+    "namespace": "Robomotion.FuzzyMatcher",
+    "platforms": ["windows","linux","darwin"],
+    "scripts": {
+        "windows": {
+            "build": [
+                "pyinstaller --onefile main.py -n fuzzymatcher.exe"
+            ],
+            "run": "fuzzymatcher.exe"
+        },
+        "linux": {
+            "build": [
+                "pyinstaller --onefile main.py -n fuzzymatcher"
+            ],
+            "run": "fuzzymatcher"
+        },
+        "darwin": {
+            "build": [
+                "pyinstaller --onefile main.py -n fuzzymatcher"
+            ],
+            "run": "fuzzymatcher"
+        }
+    },
+    "version": "1.0.4"
+}
