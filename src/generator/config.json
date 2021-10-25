@@ -1,0 +1,50 @@
+{
+	"author": [{
+		"name": "Robomotion",
+		"mail": "support@robomotion.io"
+	}],
+	"description": "It generates random data.",
+	"icon": "icon.png",
+	"keywords": ["random", "generate", "rpa"],
+	"language": "Java",
+	"name": "Generator",
+	"namespace": "Robomotion.Generator",
+	"platforms": ["windows", "linux", "darwin"],
+	"scripts": {
+		"windows": {
+			"clean": [
+				"rm -rf dist/ "
+			],
+			"build": [
+				"mvn package",
+				"jutil.exe package --jar target/robomotion-generator.jar --jdk OpenJDK11U-jre_x64_windows_hotspot_11.0.11_9.zip --out dist",
+				"cp LICENSE dist/"
+			],
+			"run": "robomotion-generator.exe"
+		},
+		"linux": {
+			"clean": [
+				"rm -rf dist/ "
+			],
+			"build": [
+				"mvn package",
+				"jutil package --jar target/robomotion-generator.jar --jdk OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz --out dist",
+				"cp LICENSE dist/"
+			],
+			"run": "robomotion-generator"
+		},
+		"darwin": {
+			"clean": [
+				"rm -rf dist/ "
+			],
+			"build": [
+				"mvn package",
+				"jutil package --jar target/robomotion-generator.jar --jdk OpenJDK11U-jre_x64_mac_hotspot_11.0.11_9.tar.gz --out dist",
+				"cp LICENSE dist/"
+			],
+			"run": "robomotion-generator"
+		}
+
+	},
+	"version": "0.0.1"
+}

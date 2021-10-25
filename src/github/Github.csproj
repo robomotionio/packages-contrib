@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <StartupObject/>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Robomotion" Version="1.4.11"/>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2"/>
+    <PackageReference Include="Google.Protobuf" Version="3.11.4"/>
+    <PackageReference Include="Grpc.Core" Version="2.27.0"/>
+    <PackageReference Include="Stubble.Core" Version="1.4.12"/>
+    <PackageReference Include="Octokit" Version="0.50.0"/>
+  </ItemGroup>
+</Project>
