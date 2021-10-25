@@ -93,14 +93,16 @@ jobs:
     - name: rclone and roboctl for linux
       if: runner.os == 'Linux'
       run: |
-       curl -O -L https://storage.googleapis.com/rohat-repository/roboctl
+       curl -O -L https://packages.robomotion.io/releases/roboctl/roboctl-v1.0.0-linux-amd64.tar.gz
+       tar -xvzf ./roboctl-v1.0.0-linux-amd64.tar.gz
        curl https://rclone.org/install.sh | sudo bash
        mkdir /home/runner/.config/rclone
   
     - name: rclone and roboctl for mac
       if: runner.os == 'macOS'
       run: |
-       curl -L -o roboctl https://storage.googleapis.com/rohat-repository/roboctlmac 
+       curl -O -L https://packages.robomotion.io/releases/roboctl/roboctl-v1.0.0-darwin-amd64.tar.gz
+       tar -xvzf ./roboctl-v1.0.0-darwin-amd64.tar.gz
        brew install rclone
        mkdir /Users/runner/.config/rclone
        
@@ -108,7 +110,8 @@ jobs:
     - name: rclone and roboctl for windows
       if: runner.os == 'Windows'
       run: |
-       C:\msys64\usr\bin\wget.exe -O roboctl https://storage.googleapis.com/rohat-repository/roboctlwin
+       C:\msys64\usr\bin\wget.exe https://packages.robomotion.io/releases/roboctl/roboctl-v1.0.0-windows-amd64.tar.gz
+       tar -xvzf .\roboctl-v1.0.0-windows-amd64.tar.gz
        C:\msys64\usr\bin\wget.exe -O rclone.exe https://storage.googleapis.com/rohat-repository/rclone.exe
        mkdir C:/Users/runneradmin/AppData/Roaming/rclone
        
