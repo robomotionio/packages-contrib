@@ -11,7 +11,7 @@ type Format struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Format,name=Format Time,icon=mdiTimelineText,color=#77AF38"`
 
 	//Input
-	InTime runtime.InVariable `spec:"title=Time,type=string,scope=Message,name=time,messageScope,customScope"`
+	InTime runtime.InVariable `spec:"title=Time,type=string,scope=Custom,messageScope,customScope,format=datetime"`
 
 	//Output
 	OutFormattedTime runtime.OutVariable `spec:"title=Formatted Time,type=string,scope=Message,name=time,messageScope,customScope"`

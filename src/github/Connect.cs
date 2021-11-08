@@ -11,7 +11,7 @@ namespace Github
         [Default("Custom", ""), MessageScope, CustomScope, Title("Application Name")]
         public InVariable<string> AppName { get; set; }
 
-        [Category(CategoryAttribute.ECategory.Token), Title("Access Token"), Option]
+        [Category(CategoryAttribute.ECategory.Token),MessageScope, CustomScope, Title("Access Token"), Option]
         public Credential OptCredentials { get; set; }
 
         [Default("Message", "conn_id"), MessageScope, Title("Connection Id"), Output]
@@ -28,7 +28,7 @@ namespace Github
             if (string.IsNullOrEmpty(appName)) {
                 throw new Error("ErrInvalidArg", "Application Name can not be empty");
             }
-            var creds = OptCredentials.Get();
+            var creds = OptCredentials.Get(ctx);
             var token = creds["value"];
             
             Guid guid = System.Guid.NewGuid();

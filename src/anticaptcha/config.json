@@ -1,7 +1,7 @@
 {
     "name": "Anti Captcha",
     "namespace": "Robomotion.AntiCaptcha",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "category": 6,
     "description": "Anti Captch entegration",
     "icon": "https://storage.googleapis.com/latif-repository/anticaptcha-icon.png",
@@ -17,7 +17,7 @@
     ],
     "author": {
         "email": "support@robomotion.io",
-        "name": "Robomotion RPA"
+        "name": "Robomotion"
     },
     "scripts": {
         "windows": {
