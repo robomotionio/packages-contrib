@@ -11,8 +11,8 @@ type Span struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Span,name=Time Span,icon=mdiTimelapse,color=#77AF38"`
 
 	//Input
-	InStartDate runtime.InVariable `spec:"title=Start Date,type=string,scope=Message,name=start,messageScope,customScope"`
-	InEndDate   runtime.InVariable `spec:"title=End Date,type=string,scope=Message,name=end,messageScope,customScope"`
+	InStartDate runtime.InVariable `spec:"title=Start Date,type=string,scope=Custom,messageScope,customScope,format=datetime"`
+	InEndDate   runtime.InVariable `spec:"title=End Date,type=string,scope=Custom,messageScope,customScope,format=datetime"`
 
 	//Output
 	OutSpan runtime.OutVariable `spec:"title=Time Span(ms),type=string,scope=Message,name=span,messageScope,customScope"`

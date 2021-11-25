@@ -1,7 +1,7 @@
 {
 	"name": "Date Time",
 	"namespace": "Robomotion.DateTime",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"category": 6,
 	"description": "Date time functions and conversions. Icons made by [Vectors Market](https://www.flaticon.com/authors/vectors-market) from [Flaticon](www.flaticon.com/)",
 	"icon": "icon.png",

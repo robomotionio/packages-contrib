@@ -62,7 +62,7 @@ type Image struct {
 	OutResult runtime.OutVariable `spec:"title=result,type=string,scope=Message,name=result,messageScope"`
 
 	//Options
-	OptToken   runtime.Credential  `spec:"title=Credentials,option"`
+	OptToken   runtime.Credential  `spec:"title=Credentials,scope=Custom,option,messageScope,customScope"`
 	OptTimeout runtime.OptVariable `spec:"title=Timeout,type=string,scope=Custom,name=30,messageScope,customScope"`
 }
 
@@ -78,7 +78,7 @@ func (n *Image) OnMessage(ctx message.Context) (err error) {
 		taskId         int
 	)
 
-	creds, err := n.OptToken.Get()
+	creds, err := n.OptToken.Get(ctx)
 	if err != nil {
 		err = runtime.NewError("Robomotion.AntiCaptcha.Image", err.Error())
 		return err

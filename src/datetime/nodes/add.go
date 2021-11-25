@@ -11,7 +11,7 @@ type Add struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Add,name=Add Time,icon=mdiTimelinePlus,color=#77AF38"`
 
 	//Input
-	InTime     runtime.InVariable `spec:"title=Time,type=string,scope=Message,name=time,messageScope,customScope"`
+	InTime     runtime.InVariable `spec:"title=Time,type=string,scope=Custom,messageScope,customScope,format=datetime"`
 	InDuration runtime.InVariable `spec:"title=Duration(ms),type=number,scope=Message,name=duration,messageScope,customScope"`
 
 	//Output

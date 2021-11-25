@@ -11,7 +11,7 @@ type Leap struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Leap,name=Is Leap Year,icon=mdiCalendarStar,color=#77AF38"`
 
 	//Input
-	InTime runtime.InVariable `spec:"title=Time,type=string,scope=Message,name=time,messageScope,customScope"`
+	InTime runtime.InVariable `spec:"title=Date,type=string,scope=Custom,customScope,format=date"`
 
 	//Output
 	OutIsLeap runtime.OutVariable `spec:"title=Is Leap,type=boolean,scope=Message,name=leap,messageScope,customScope"`
