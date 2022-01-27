@@ -10,6 +10,8 @@ func main() {
 
 	runtime.RegisterNodes(
 		&anticaptcha.Image{},
+		&anticaptcha.ReCaptcha{},
+		&anticaptcha.HCaptcha{},
 	)
 
 	runtime.Start()

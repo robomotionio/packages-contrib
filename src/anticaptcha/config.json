@@ -1,7 +1,7 @@
 {
     "name": "Anti Captcha",
     "namespace": "Robomotion.AntiCaptcha",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "category": 6,
     "description": "Anti Captch entegration",
     "icon": "https://storage.googleapis.com/latif-repository/anticaptcha-icon.png",

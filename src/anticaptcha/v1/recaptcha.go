@@ -1,14 +1,11 @@
 package anticaptcha
 
 import (
-	"bufio"
 	"crypto/tls"
-	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -17,63 +14,57 @@ import (
 	"github.com/robomotionio/robomotion-go/runtime"
 )
 
-//the structs for anticapthca api
-type CreateICTaskRequest struct {
-	ClientKey string `json:"clientKey"`
-	Task      Task   `json:"task"`
-}
+type (
+	CreateRCTaskRequest struct {
+		ClientKey string `json:"clientKey"`
+		Task      RCTask `json:"task"`
+	}
 
-type Task struct {
-	Type      string `json:"type"`
-	Body      string `json:"body"`
-	Phrase    bool   `json:"phrase"`
-	Case      bool   `json:"case"`
-	Numeric   bool   `json:"numeric"`
-	Math      int    `json:"math"`
-	MinLength int    `json:"minLength"`
-	MaxLength int    `json:"maxLength"`
-}
-type CreateTaskResponse struct {
-	ErrorId int `json:"errorId"`
-	TaskId  int `json:"taskId"`
-}
-type TaskResultRequest struct {
-	ClientKey string `json:"clientKey"`
-	TaskId    int    `json:"taskId"`
-}
-type TaskResultResponse struct {
-	ErrorId          int      `json:"errorId"`
-	ErrorDescription string   `json:"errorDescription"`
-	Status           string   `json:"status"`
-	Solution         Solution `json:"solution"`
-}
-type Solution struct {
-	Text string `json:"text"`
-	Url  string `json:url`
-}
+	RCTask struct {
+		Type       string `json:"type"`
+		WebsiteURL string `json:"websiteURL"`
+		WebsiteKey string `json:"websiteKey"`
+	}
+
+	RCTaskResultResponse struct {
+		ErrorId          int        `json:"errorId"`
+		ErrorDescription string     `json:"errorDescription"`
+		Status           string     `json:"status"`
+		Solution         RCSolution `json:"solution"`
+	}
+
+	RCSolution struct {
+		Cookies            interface{} `json:"cookies"`
+		GRecaptchaResponse string      `json:gRecaptchaResponse`
+	}
+)
+
+//Create ReCaptcha Task Request
+//ReCaptcha Task
 
 // Image holds this Node's properties
-type Image struct {
-	runtime.Node `spec:"id=Robomotion.AntiCaptcha.Image,name=Image Captcha,icon=mdiEye,color=#FBAD00"`
+type ReCaptcha struct {
+	runtime.Node `spec:"id=Robomotion.AntiCaptcha.ReCaptcha,name=ReCaptcha,icon=mdiRobot,color=#FBAD00"`
 
 	//Inputs
-	InImagePath runtime.InVariable `spec:"title=Image Path,type=string,scope=Custom,messageScope,customScope"`
+	InWebsiteKey runtime.InVariable `spec:"title=Website Key,type=string,scope=Custom,messageScope,customScope"`
+	InWebsiteURL runtime.InVariable `spec:"title=Website URL,type=string,scope=Custom,messageScope,customScope"`
 
 	//Outputs
 	OutResult runtime.OutVariable `spec:"title=result,type=string,scope=Message,name=result,messageScope"`
 
 	//Options
 	OptToken   runtime.Credential  `spec:"title=Credentials,scope=Custom,option,messageScope,customScope"`
-	OptTimeout runtime.OptVariable `spec:"title=Timeout,type=string,scope=Custom,name=30,messageScope,customScope"`
+	OptTimeout runtime.OptVariable `spec:"title=Timeout,type=string,scope=Custom,name=180,messageScope,customScope"`
 }
 
 // OnCreate runs once when a flow starts running
-func (n *Image) OnCreate() error {
+func (n *ReCaptcha) OnCreate() error {
 	return nil
 }
 
 // OnMessage runs everytime a message is received
-func (n *Image) OnMessage(ctx message.Context) (err error) {
+func (n *ReCaptcha) OnMessage(ctx message.Context) (err error) {
 	var (
 		result, status string
 		taskId         int
@@ -81,62 +72,64 @@ func (n *Image) OnMessage(ctx message.Context) (err error) {
 
 	creds, err := n.OptToken.Get(ctx)
 	if err != nil {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image", err.Error())
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha", err.Error())
 		return err
 	}
 
 	inToken := creds["value"].(string)
 	if inToken == "" {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image", "Token can not be empty")
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha", "Token can not be empty")
 		return err
 	}
 
 	timeOut, err := n.OptTimeout.GetString(ctx)
 	if err != nil {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.EmptyField", err.Error())
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EmptyField", err.Error())
 		return err
 	}
 	//TODO: Designer dan number gelmiyor. Type ı number yapınca transporting closed hatası alıyorum.Bu yüzden designer dan string alıp int e çevirdim
 	OptTimeout, err := strconv.Atoi(timeOut)
 	if err != nil {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.EmptyField", err.Error())
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EmptyField", err.Error())
 		return err
 	}
 	if OptTimeout < 0 {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.WrongField", "Timout can not be less than zero")
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.WrongField", "Timout can not be less than zero")
 		return err
 	}
 
-	inImagePath, err := n.InImagePath.GetString(ctx)
+	inWebsiteUrl, err := n.InWebsiteURL.GetString(ctx)
 	if err != nil {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.EmptyField", err.Error())
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EmptyField", err.Error())
 		return err
 	}
-	if inImagePath == "" {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.EmptyField", "Image Path can not be empty")
+	if inWebsiteUrl == "" {
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EmptyField", "Website URL can not be empty")
 		return err
 	}
 
-	base64, err := encodeBase64(inImagePath) //The image is encoded as base64
+	inWebsiteKey, err := n.InWebsiteKey.GetString(ctx)
 	if err != nil {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.EncodeBase64", err.Error())
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EmptyField", err.Error())
 		return err
 	}
-
-	taskId, err = createTask(inToken, base64) //Task is created
+	if inWebsiteKey == "" {
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EmptyField", "Website Key can not be empty")
+		return err
+	}
+	taskId, err = createReCaptchaTask(inToken, inWebsiteUrl, inWebsiteKey) //Task is created
 	if err != nil {
-		err = runtime.NewError("Robomotion.AntiCaptcha.Image.EncodeBase64", err.Error())
+		err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EncodeBase64", err.Error())
 		return err
 	}
-
 	for {
 		if OptTimeout == 0 {
-			err = runtime.NewError("Robomotion.AntiCaptcha.Image.TimedOut", "The captcha could not be solved in given timeout")
+			err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.TimedOut", "The captcha could not be solved in given timeout")
 			return err
 		}
-		status, result, err = ControlTask(inToken, taskId)
+		status, result, err = ControlReCaptchaTask(inToken, taskId)
 		if err != nil {
-			err = runtime.NewError("Robomotion.AntiCaptcha.Image.EncodeBase64", err.Error())
+			err = runtime.NewError("Robomotion.AntiCaptcha.ReCaptcha.EncodeBase64", err.Error())
 			return err
 		}
 		if status == "ready" {
@@ -146,49 +139,25 @@ func (n *Image) OnMessage(ctx message.Context) (err error) {
 		time.Sleep(time.Second)
 		OptTimeout--
 	}
-
 	err = n.OutResult.Set(ctx, result)
 	return nil
 }
 
 // OnClose runs once when a flow stops running
-func (n *Image) OnClose() error {
+func (n *ReCaptcha) OnClose() error {
 	return nil
 }
 
-func encodeBase64(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-
-	// Read entire file into byte slice.
-	reader := bufio.NewReader(f)
-	content, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return "", err
-	}
-
-	// Encode as base64.
-	encoded := base64.StdEncoding.EncodeToString(content)
-	return encoded, nil
-}
-
-func createTask(token, base64 string) (int, error) {
+func createReCaptchaTask(token, websiteUrl, websiteKey string) (int, error) {
 	const url = "https://api.anti-captcha.com/createTask"
 	const method = "POST"
 
-	task := Task{
-		Type:      "ImageToTextTask",
-		Body:      base64,
-		Phrase:    false,
-		Case:      false,
-		Numeric:   false,
-		Math:      0,
-		MinLength: 0,
-		MaxLength: 0,
+	task := RCTask{
+		Type:       "NoCaptchaTaskProxyless",
+		WebsiteURL: websiteUrl,
+		WebsiteKey: websiteKey,
 	}
-	ctReq := &CreateICTaskRequest{
+	ctReq := &CreateRCTaskRequest{
 		ClientKey: token,
 		Task:      task,
 	}
@@ -216,7 +185,6 @@ func createTask(token, base64 string) (int, error) {
 	client := &http.Client{
 		Transport: t,
 	}
-
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
 		return -1, err
@@ -238,11 +206,10 @@ func createTask(token, base64 string) (int, error) {
 	if err != nil {
 		return -1, nil
 	}
-
 	return taskResp.TaskId, nil
 }
 
-func ControlTask(token string, taskId int) (string, string, error) {
+func ControlReCaptchaTask(token string, taskId int) (string, string, error) {
 	const url = "https://api.anti-captcha.com/getTaskResult"
 	const method = "POST"
 
@@ -285,7 +252,7 @@ func ControlTask(token string, taskId int) (string, string, error) {
 	}
 	res, err := ioutil.ReadAll(temp.Body)
 	defer temp.Body.Close()
-	var body TaskResultResponse
+	var body RCTaskResultResponse
 	err = json.Unmarshal(res, &body)
 	if err != nil {
 		return "", "", err
@@ -297,7 +264,7 @@ func ControlTask(token string, taskId int) (string, string, error) {
 	}
 
 	status := body.Status
-	text := body.Solution.Text
+	gRecaptchaResponse := body.Solution.GRecaptchaResponse
 
-	return status, text, nil
+	return status, gRecaptchaResponse, nil
 }
