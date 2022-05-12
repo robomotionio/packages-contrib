@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/smtp"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/hashicorp/go-version"
@@ -37,9 +39,9 @@ func main() {
 	//index mapped
 	indexmap := ReadIndex(str)
 
-	var repodirectory string //for mv repo command
+	var repoDirectory string //for mv repo command
 
-	successerror := make(map[string]string)
+	successError := make(map[string]string)
 
 	// tree walk
 	err = filepath.Walk(".",
@@ -49,173 +51,181 @@ func main() {
 			}
 
 			//checking path
-			configcheck := strings.Contains(path, "config.json")
-			distcheck := strings.Contains(path, "dist")
-			if configcheck == true && distcheck == false {
+			configCheck := strings.Contains(path, "config.json")
+			distCheck := strings.Contains(path, "dist")
+			if configCheck == true && distCheck == false {
 
-				dataconfig, err := ioutil.ReadFile(path)
+				dataConfig, err := ioutil.ReadFile(path)
 				if err != nil {
 					fmt.Print(err)
 				}
 
-				var configintr interface{}
-				err = json.Unmarshal(dataconfig, &configintr)
+				var configIntr interface{}
+				err = json.Unmarshal(dataConfig, &configIntr)
 				if err != nil {
 					fmt.Println("error:", err)
 				}
-				stringconfig := fmt.Sprintf("%v", configintr)
+				stringConfig := fmt.Sprintf("%v", configIntr)
 
-				configmap, configlanguage, configplatform, configicon := ReadConfig(stringconfig)
+				configMap, configLanguage, configPlatform, configIcon := ReadConfig(stringConfig)
 				//path without config.json
-				newpath := path[:len(path)-12]
-				newpath = filepath.ToSlash(newpath)
+				newPath := path[:len(path)-12]
+				newPath = filepath.ToSlash(newPath)
 				var out bytes.Buffer
-				for key1, val1 := range configmap {
-					foldername := strings.Split(key1, ".")
-					foldernamerepo := foldername[1]
-					pythonlanguage := false
-					javalanguage := false
-					if configlanguage[key1] == "Python" {
-						pythonlanguage = true
-					} else if configlanguage[key1] == "Java" {
-						javalanguage = true
+				for keyConfig, valConfig := range configMap {
+					folderName := strings.Split(keyConfig, ".")
+					folderNameRepo := folderName[1]
+					pythonLanguage, javaLanguage, dotnetLanguage := false, false, false
+					if configLanguage[keyConfig] == "Python" {
+						pythonLanguage = true
+					} else if configLanguage[keyConfig] == "Java" {
+						javaLanguage = true
+						if runtime.GOOS == "linux" && runtime.GOARCH == "arm" {
+							sedCommand := exec.Command("sh", "-c", " sed -i 's+x64_linux+arm_linux+' "+newPath+"/config.json ")
+							sedCommand.Stdout = &out
+							err = sedCommand.Run()
+							if err != nil {
+								fmt.Println("error when changing build script", err)
+							}
+						}
+					} else if configLanguage[keyConfig] == "C#" {
+						dotnetLanguage = true
 					}
-					runneros := os.Getenv("RUNNEROS")
-					iconcheck := true
-					var commandstr *exec.Cmd
-					if configicon[key1] == "icon.png" {
-						iconcheck = false
+					if runtime.GOARCH != "arm" || !dotnetLanguage {
+						runneros := os.Getenv("RUNNEROS")
+						var commandStr *exec.Cmd
+						if configIcon[keyConfig] == "icon.png" {
+							if runneros == "Linux" {
+								commandStr = exec.Command("sh", "-c", " cd "+newPath+" && rclone sync -P --s3-acl=public-read ./icon.png DO:robomotion-packages/contrib/"+folderNameRepo+"/ && sed -i 's+icon.png+https://packages.robomotion.io/contrib/"+folderNameRepo+"/icon.png+' config.json ")
+							} else if runneros == "Windows" {
+								commandStr = exec.Command("sh", "-c", " cd "+newPath+" && D:/a/packages-contrib/packages-contrib/rclone.exe sync -P --s3-acl=public-read ./icon.png DO:robomotion-packages/contrib/"+folderNameRepo+"/ && sed -i 's+icon.png+https://packages.robomotion.io/contrib/"+folderNameRepo+"/icon.png+' config.json ")
+							} else if runneros == "macOS" {
+								commandStr = exec.Command("sh", "-c", " cd "+newPath+" && rclone sync -P --s3-acl=public-read ./icon.png DO:robomotion-packages/contrib/"+folderNameRepo+"/ && perl -i -pe's+icon.png+https://packages.robomotion.io/contrib/"+folderNameRepo+"/icon.png+' config.json ")
+							}
+							commandStr.Stdout = &out
+							err = commandStr.Run()
+							if err != nil {
+								fmt.Println("rclone commands error", err)
+							}
+
+						}
+						platform := configPlatform[keyConfig]
+						var platformCheck bool
+						roboctl := "roboctl"
+
 						if runneros == "Linux" {
-							commandstr = exec.Command("sh", "-c", " cd "+newpath+" && rclone sync -P --s3-acl=public-read ./icon.png DO:robomotion-packages/contrib/"+foldernamerepo+"/ && sed -i 's+icon.png+https://packages.robomotion.io/contrib/"+foldernamerepo+"/icon.png+' config.json ")
+							runneros = "linux"
+							platformCheck = strings.Contains(platform, runneros)
+							repoDirectory = "/home/runner/work/packages-contrib/packages-contrib/repo"
+							if runtime.GOARCH == "arm" {
+								runneros = "rpi"
+								repoDirectory = "/home/pi/external/4c2f8c8e-6a71-4fb2-904a-2f76ffd42d8d/packages-runner/_work/packages-contrib/packages-contrib/repo"
+							}
 						} else if runneros == "Windows" {
-							commandstr = exec.Command("sh", "-c", " cd "+newpath+" && D:/a/packages-contrib/packages-contrib/rclone.exe sync -P --s3-acl=public-read ./icon.png DO:robomotion-packages/contrib/"+foldernamerepo+"/ && sed -i 's+icon.png+https://packages.robomotion.io/contrib/"+foldernamerepo+"/icon.png+' config.json ")
+							runneros = "windows"
+							platformCheck = strings.Contains(platform, runneros)
+							roboctl = "D:/a/packages-contrib/packages-contrib/roboctl"
+							repoDirectory = "D:/a/packages-contrib/packages-contrib/repo"
 						} else if runneros == "macOS" {
-							commandstr = exec.Command("sh", "-c", " cd "+newpath+" && rclone sync -P --s3-acl=public-read ./icon.png DO:robomotion-packages/contrib/"+foldernamerepo+"/ && perl -i -pe's+icon.png+https://packages.robomotion.io/contrib/"+foldernamerepo+"/icon.png+' config.json ")
-						}
-						commandstr.Stdout = &out
-						err = commandstr.Run()
-						if err != nil {
-							fmt.Println("rclone commands error", err)
+							repoDirectory = "/Users/runner/work/packages-contrib/packages-contrib/repo"
+							runneros = "darwin"
+							platformCheck = strings.Contains(platform, runneros)
 						}
 
-					}
-					fmt.Println("Icon check", iconcheck)
-					platform := configplatform[key1]
-					var platformcheck bool
-					roboctl := "roboctl"
+						//change config
 
-					fmt.Println(runneros)
-					if runneros == "Linux" {
-						runneros = "linux"
-						platformcheck = strings.Contains(platform, runneros)
-						repodirectory = "/home/runner/work/packages-contrib/packages-contrib/repo"
-					} else if runneros == "Windows" {
-						runneros = "windows"
-						platformcheck = strings.Contains(platform, runneros)
-						roboctl = "D:/a/packages-contrib/packages-contrib/roboctl"
-						repodirectory = "D:/a/packages-contrib/packages-contrib/repo"
-					} else if runneros == "macOS" {
-						repodirectory = "/Users/runner/work/packages-contrib/packages-contrib/repo"
-						runneros = "darwin"
-						platformcheck = strings.Contains(platform, runneros)
-					}
+						if strings.Contains(platform, "any") == true {
+							platformCheck = true
+						}
 
-					//change config
-
-					if strings.Contains(platform, "any") == true {
-						platformcheck = true
-					}
-
-					fmt.Println(platformcheck)
-					fmt.Println(platform)
-					exist := true
-					_, err = os.Stat("repo/" + foldernamerepo + "")
-					if os.IsNotExist(err) {
-						exist = false
-					}
-					fmt.Println(exist)
-					changelogcommand := exec.Command("sh", "-c", " cd "+newpath+" && rclone sync -P --s3-acl=public-read ./CHANGELOG.md DO:robomotion-packages/contrib/"+foldernamerepo+"/ ")
-					if platformcheck {
-						if value, ok := indexmap[key1]; ok {
-							//version compare
-							v1, err := version.NewVersion(val1)
-							if err != nil {
-								fmt.Println(err)
-							}
-							v2, err := version.NewVersion(value)
-							if err != nil {
-								fmt.Println(err)
-							}
-
-							var comman *exec.Cmd
-							if v1.GreaterThan(v2) {
-								//config version > index
-								if exist == false {
-									comman = exec.Command("sh", "-c", " cd "+newpath+" && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+"  && mv "+foldernamerepo+" "+repodirectory+"/"+foldernamerepo+"")
-									if pythonlanguage {
-										comman = exec.Command("sh", "-c", " cd "+newpath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+"  && mv "+foldernamerepo+" "+repodirectory+"/"+foldernamerepo+"")
-									} else if javalanguage {
-										comman = exec.Command("sh", "-c", " cd "+newpath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+"  && mv "+foldernamerepo+" "+repodirectory+"/"+foldernamerepo+"")
-									}
-
-								} else {
-									comman = exec.Command("sh", "-c", " cd "+newpath+" && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+"  && mv "+foldernamerepo+"/* "+repodirectory+"/"+foldernamerepo+"")
-									if pythonlanguage {
-										comman = exec.Command("sh", "-c", " cd "+newpath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+"  && mv "+foldernamerepo+"/* "+repodirectory+"/"+foldernamerepo+"")
-									} else if javalanguage {
-										comman = exec.Command("sh", "-c", " cd "+newpath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+"  && mv "+foldernamerepo+"/* "+repodirectory+"/"+foldernamerepo+"")
-									}
-								}
-
-								comman.Stdout = &out
-								err = comman.Run()
+						exist := true
+						_, err = os.Stat("repo/" + folderNameRepo + "")
+						if os.IsNotExist(err) {
+							exist = false
+						}
+						changelogCommand := exec.Command("sh", "-c", " cd "+newPath+" && rclone sync -P --s3-acl=public-read ./CHANGELOG.md DO:robomotion-packages/contrib/"+folderNameRepo+"/ ")
+						if platformCheck {
+							if value, ok := indexmap[keyConfig]; ok {
+								//version compare
+								v1, err := version.NewVersion(valConfig)
 								if err != nil {
-									fmt.Println("error", err)
-									successerror[key1] = err.Error()
-								} else {
-									successerror[key1] = out.String()
+									fmt.Println(err)
 								}
-								changelogcommand.Stdout = &out
-								err = changelogcommand.Run()
+								v2, err := version.NewVersion(value)
+								if err != nil {
+									fmt.Println(err)
+								}
+
+								var comman *exec.Cmd
+								if v1.GreaterThan(v2) {
+									//config version > index
+									if exist == false {
+										comman = exec.Command("sh", "-c", " cd "+newPath+" && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+"  && mv "+folderNameRepo+" "+repoDirectory+"/"+folderNameRepo+"")
+										if pythonLanguage {
+											comman = exec.Command("sh", "-c", " cd "+newPath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+"  && mv "+folderNameRepo+" "+repoDirectory+"/"+folderNameRepo+"")
+										} else if javaLanguage {
+											comman = exec.Command("sh", "-c", " cd "+newPath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+"  && mv "+folderNameRepo+" "+repoDirectory+"/"+folderNameRepo+"")
+										}
+
+									} else {
+										comman = exec.Command("sh", "-c", " cd "+newPath+" && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+"  && mv "+folderNameRepo+"/* "+repoDirectory+"/"+folderNameRepo+"")
+										if pythonLanguage {
+											comman = exec.Command("sh", "-c", " cd "+newPath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+"  && mv "+folderNameRepo+"/* "+repoDirectory+"/"+folderNameRepo+"")
+										} else if javaLanguage {
+											comman = exec.Command("sh", "-c", " cd "+newPath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+"  && mv "+folderNameRepo+"/* "+repoDirectory+"/"+folderNameRepo+"")
+										}
+									}
+
+									comman.Stdout = &out
+									err = comman.Run()
+									if err != nil {
+										successError[keyConfig] = err.Error()
+										log.Fatal(keyConfig+" ", err.Error())
+									} else {
+										successError[keyConfig] = out.String()
+									}
+									changelogCommand.Stdout = &out
+									err = changelogCommand.Run()
+									if err != nil {
+										fmt.Println("changelog command error", err)
+									}
+								}
+							} else {
+
+								var cmd *exec.Cmd
+								if exist == false {
+									cmd = exec.Command("sh", "-c", " cd "+newPath+" && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+" && mv "+folderNameRepo+" "+repoDirectory+"/"+folderNameRepo+"")
+									if pythonLanguage {
+										cmd = exec.Command("sh", "-c", " cd "+newPath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+" && mv "+folderNameRepo+" "+repoDirectory+"/"+folderNameRepo+"")
+									} else if javaLanguage {
+										cmd = exec.Command("sh", "-c", " cd "+newPath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+" && mv "+folderNameRepo+" "+repoDirectory+"/"+folderNameRepo+"")
+									}
+								} else {
+
+									cmd = exec.Command("sh", "-c", " cd "+newPath+" && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+" && mv "+folderNameRepo+"/* "+repoDirectory+"/"+folderNameRepo+"")
+									if pythonLanguage {
+										cmd = exec.Command("sh", "-c", " cd "+newPath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+" && mv "+folderNameRepo+"/* "+repoDirectory+"/"+folderNameRepo+"")
+									} else if javaLanguage {
+										cmd = exec.Command("sh", "-c", " cd "+newPath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+folderNameRepo+" && mv robomotion-* "+folderNameRepo+" && mv "+folderNameRepo+"/* "+repoDirectory+"/"+folderNameRepo+"")
+									}
+								}
+
+								cmd.Stdout = &out
+								err = cmd.Run()
+								if err != nil {
+									successError[keyConfig] = err.Error()
+									log.Fatal(keyConfig+" ", err.Error())
+								} else {
+									successError[keyConfig] = out.String()
+								}
+
+								changelogCommand.Stdout = &out
+								err = changelogCommand.Run()
 								if err != nil {
 									fmt.Println("changelog command error", err)
 								}
+
 							}
-						} else {
-
-							var cmd *exec.Cmd
-							if exist == false {
-								cmd = exec.Command("sh", "-c", " cd "+newpath+" && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+" && mv "+foldernamerepo+" "+repodirectory+"/"+foldernamerepo+"")
-								if pythonlanguage {
-									cmd = exec.Command("sh", "-c", " cd "+newpath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+" && mv "+foldernamerepo+" "+repodirectory+"/"+foldernamerepo+"")
-								} else if javalanguage {
-									cmd = exec.Command("sh", "-c", " cd "+newpath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+" && mv "+foldernamerepo+" "+repodirectory+"/"+foldernamerepo+"")
-								}
-							} else {
-
-								cmd = exec.Command("sh", "-c", " cd "+newpath+" && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+" && mv "+foldernamerepo+"/* "+repodirectory+"/"+foldernamerepo+"")
-								if pythonlanguage {
-									cmd = exec.Command("sh", "-c", " cd "+newpath+" && pipreqs . && pip install -r requirements.txt && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+" && mv "+foldernamerepo+"/* "+repodirectory+"/"+foldernamerepo+"")
-								} else if javalanguage {
-									cmd = exec.Command("sh", "-c", " cd "+newpath+" && mv ../../OpenJDK11U-* . && "+roboctl+" package -b "+runneros+" && mkdir "+foldernamerepo+" && mv robomotion-* "+foldernamerepo+" && mv "+foldernamerepo+"/* "+repodirectory+"/"+foldernamerepo+"")
-								}
-							}
-
-							cmd.Stdout = &out
-							err = cmd.Run()
-							if err != nil {
-								fmt.Println("error", err)
-								successerror[key1] = err.Error()
-							} else {
-								successerror[key1] = out.String()
-							}
-
-							changelogcommand.Stdout = &out
-							err = changelogcommand.Run()
-							if err != nil {
-								fmt.Println("changelog command error", err)
-							}
-
 						}
 					}
 				}
@@ -226,16 +236,16 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	messagestr := strings.Builder{}
-	subjectstr := strings.Builder{}
-	subjectstr.WriteString("Contrib Repo's Deployment   ")
-	messagestr.WriteString("RUNNER OS= " + os.Getenv("RUNNEROS") + " ")
-	for key, value := range successerror {
-		messagestr.WriteString(key + value)
+	messageStr := strings.Builder{}
+	subjectStr := strings.Builder{}
+	subjectStr.WriteString("Main Repo's Deployment   ")
+	messageStr.WriteString("RUNNER " + os.Getenv("RUNNEROS") + " " + runtime.GOARCH + "  ")
+	for key, value := range successError {
+		messageStr.WriteString(key + value)
 		if strings.Contains(value, "Done.") {
-			subjectstr.WriteString("" + key + "-> Successful ")
+			subjectStr.WriteString("" + key + "-> Successful ")
 		} else {
-			subjectstr.WriteString("" + key + "-> Failed ")
+			subjectStr.WriteString("" + key + "-> Failed ")
 		}
 
 	}
@@ -255,8 +265,8 @@ func main() {
 	request := Mail{
 		Sender:  from,
 		To:      to,
-		Subject: subjectstr.String(),
-		Body:    messagestr.String(),
+		Subject: subjectStr.String(),
+		Body:    messageStr.String(),
 	}
 	msg := BuildMessage(request)
 
@@ -271,13 +281,13 @@ func main() {
 func ReadIndex(m string) map[string]string {
 	nsvs := make(map[string]string)
 
-	stringfirst := strings.Split(m, "namespace:")
-	stringsecond := strings.Split(m, "version:")
-	for i := 0; i < len(stringfirst)-1; i++ {
-		resultnamesp := strings.Split(stringfirst[i+1], " ")
-		resultversion := strings.Split(stringsecond[i+1], " ")
+	stringFirst := strings.Split(m, "namespace:")
+	stringSecond := strings.Split(m, "version:")
+	for i := 0; i < len(stringFirst)-1; i++ {
+		resultNamesp := strings.Split(stringFirst[i+1], " ")
+		resultVersion := strings.Split(stringSecond[i+1], " ")
 
-		nsvs[resultnamesp[0]] = resultversion[0]
+		nsvs[resultNamesp[0]] = resultVersion[0]
 
 	}
 	//nsvs contains namespace and key
@@ -289,42 +299,42 @@ func ReadConfig(m string) (map[string]string, map[string]string, map[string]stri
 	nsln := make(map[string]string)
 	nspl := make(map[string]string)
 	nsic := make(map[string]string)
-	stringfirst := strings.Split(m, "namespace:")
-	stringsecond := strings.Split(m, "version:")
-	for i := 0; i < len(stringfirst)-1; i++ {
+	stringFirst := strings.Split(m, "namespace:")
+	stringSecond := strings.Split(m, "version:")
+	for i := 0; i < len(stringFirst)-1; i++ {
 
-		resultnamesp := strings.Split(stringfirst[i+1], " ")
-		resultversion := strings.Split(stringsecond[i+1], " ")
-		versionstring := resultversion[0]
-		nsvs[resultnamesp[0]] = versionstring[:len(versionstring)-1]
+		resultNamesp := strings.Split(stringFirst[i+1], " ")
+		resultVersion := strings.Split(stringSecond[i+1], " ")
+		versionString := resultVersion[0]
+		nsvs[resultNamesp[0]] = versionString[:len(versionString)-1]
 
 	}
 
-	stringthird := strings.Split(m, "language:")
+	stringThird := strings.Split(m, "language:")
 
-	for i := 0; i < len(stringfirst)-1; i++ {
-		resultnamesp := strings.Split(stringfirst[i+1], " ")
-		resultlanguage := strings.Split(stringthird[i+1], " ")
-		languagestring := resultlanguage[0]
-		nsln[resultnamesp[0]] = languagestring
+	for i := 0; i < len(stringFirst)-1; i++ {
+		resultNamesp := strings.Split(stringFirst[i+1], " ")
+		resultLanguage := strings.Split(stringThird[i+1], " ")
+		languageString := resultLanguage[0]
+		nsln[resultNamesp[0]] = languageString
 	}
 
-	stringfourth := strings.Split(m, "platforms:")
+	stringFourth := strings.Split(m, "platforms:")
 
-	for i := 0; i < len(stringfirst)-1; i++ {
-		resultnamesp := strings.Split(stringfirst[i+1], " ")
-		resultplatform := strings.Split(stringfourth[i+1], "]")
-		platformstring := resultplatform[0]
-		nspl[resultnamesp[0]] = platformstring
+	for i := 0; i < len(stringFirst)-1; i++ {
+		resultNamesp := strings.Split(stringFirst[i+1], " ")
+		resultPlatform := strings.Split(stringFourth[i+1], "]")
+		platformString := resultPlatform[0]
+		nspl[resultNamesp[0]] = platformString
 	}
 
-	stringfifth := strings.Split(m, "icon:")
+	stringFifth := strings.Split(m, "icon:")
 
-	for i := 0; i < len(stringfirst)-1; i++ {
-		resultnamesp := strings.Split(stringfirst[i+1], " ")
-		resulticon := strings.Split(stringfifth[i+1], " ")
-		iconstring := resulticon[0]
-		nsic[resultnamesp[0]] = iconstring
+	for i := 0; i < len(stringFirst)-1; i++ {
+		resultNamesp := strings.Split(stringFirst[i+1], " ")
+		resultIcon := strings.Split(stringFifth[i+1], " ")
+		iconString := resultIcon[0]
+		nsic[resultNamesp[0]] = iconString
 	}
 
 	//nsln contains namespace and language
