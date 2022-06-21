@@ -1,0 +1,35 @@
+{
+    "author": {
+		"name": "Robomotion IO",
+		"email": "support@robomotion.io"
+	},
+    "category": 1,
+    "description": "Performs audio processing related works",
+    "icon": "./icon.png",
+    "keywords": ["robomotion", "audio-processing", "convert", "mp3"],
+	"language": "Python", 
+	"name": "Audio Processing",
+    "namespace": "Robomotion.AudioProcessing",
+    "platforms": ["windows","linux","darwin"],
+    "scripts": {
+        "windows": {
+            "build": [
+                "pyinstaller --onefile main.py  -n audioprocessing.exe"
+            ],
+            "run": "audioprocessing.exe"
+        },
+        "linux": {
+            "build": [
+                "pyinstaller --onefile main.py -n audioprocessing"
+            ],
+            "run": "audioprocessing"
+        },
+        "darwin": {
+            "build": [
+                "pyinstaller --onefile main.py -n audioprocessing"
+            ],
+            "run": "audioprocessing"
+        }
+    },
+    "version": "1.0.0"
+}
