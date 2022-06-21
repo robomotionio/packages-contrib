@@ -2,15 +2,16 @@ from robomotion.node import Node
 from robomotion.decorators import *
 from robomotion.variable import Variable, InVariable, OutVariable, OptVariable, Credentials, ECategory, _Enum
 from robomotion.message import Context, Message
+import os
 from os import path
 from pydub import AudioSegment
 
-@node_decorator(name='Robomotion.AudioProcessing.Convert', title='Convert', color='#F56040', icon='M18 8c0-3.31-2.69-6-6-6S6 4.69 6 8c0 4.5 6 11 6 11s6-6.5 6-11zm-8 0c0-1.1.9-2 2-2s2 .9 2 2-.89 2-2 2c-1.1 0-2-.9-2-2zM5 20v2h14v-2H5z')
+@node_decorator(name='Robomotion.AudioProcessing.Convert', title='Convert', color='#000000', icon='M8 4v10.184C7.686 14.072 7.353 14 7 14c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V7h7v4.184c-.314-.112-.647-.184-1-.184-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V4H8z')
 class Convert(Node):
     def __init__(self):
         super().__init__()
         self.inSourcePath = InVariable(title='Source Path', type='string', scope='Custom', name='', customScope=True, messageScope=True)
-        self.inDestionationPath = InVariable(title='Destionation Path', type='string', scope='Custom', name='', customScope=True, messageScope=True)                        
+        self.inDestinationPath = InVariable(title='Destination Path', type='string', scope='Custom', name='', customScope=True, messageScope=True)                        
 
     def on_create(self):
         return
@@ -19,17 +20,18 @@ class Convert(Node):
       
         
         inSourcePath = self.inSourcePath.get(ctx)
-        inDestionationPath = self.inDestionationPath.get(ctx)
+        inDestinationPath = self.inDestinationPath.get(ctx)
         
         if type(inSourcePath) != str:
             raise TypeError("Invalid Input. Source Path is not valid string")        
 
-        if type(inDestionationPath) != str:
-            raise TypeError("Invalid Input. Destionation Path is not valid string")
+        if type(inDestinationPath) != str:
+            raise TypeError("Invalid Input. Destination Path is not valid string")
             
-        filename, file_extension = os.path.splitext(inDestionationPath)
-        
-        sound = AudioSegment.from_mp3(src)        
-        sound.export(dst, format=file_extension)
+        filename, file_extension = os.path.splitext(inDestinationPath)
+        file_extension = file_extension[1:] #first character is '.', so it is removed
+
+        sound = AudioSegment.from_mp3(inSourcePath)        
+        sound.export(inDestinationPath, format=file_extension)
     def on_close(self):
         return
