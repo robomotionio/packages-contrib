@@ -11,7 +11,7 @@ type Split struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Split,name=Split Date,icon=mdiCalendarBlankMultiple,color=#77AF38"`
 
 	//Input
-	InTime runtime.InVariable `spec:"title=Time,type=string,scope=Message,name=time,messageScope,customScope"`
+	InTime runtime.InVariable `spec:"title=Time,type=object,scope=Message,name=time,messageScope,customScope"`
 
 	//Output
 	OutParts runtime.OutVariable `spec:"title=Parts,type=object,scope=Message,name=parts,messageScope,customScope"`
