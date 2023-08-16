@@ -1,4 +1,4 @@
-package nodes
+package datetime
 
 import (
 	"time"
@@ -11,10 +11,10 @@ type Split struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Split,name=Split Date,icon=mdiCalendarBlankMultiple,color=#77AF38"`
 
 	//Input
-	InTime runtime.InVariable `spec:"title=Time,type=string,scope=Message,name=time,messageScope,customScope"`
+	InTime runtime.InVariable[string] `spec:"title=Time,type=string,scope=Message,name=time,messageScope,customScope"`
 
 	//Output
-	OutParts runtime.OutVariable `spec:"title=Parts,type=object,scope=Message,name=parts,messageScope,customScope"`
+	OutParts runtime.OutVariable[interface{}] `spec:"title=Parts,type=object,scope=Message,name=parts,messageScope,customScope"`
 
 	//Options
 	OptLayout string `spec:"title=Layout,value=RFC3339,enum=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,enumNames=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,option"`
@@ -32,7 +32,7 @@ func (n *Split) OnMessage(ctx message.Context) error {
 		layout = time.RFC3339
 	}
 
-	inTime, err := n.InTime.GetString(ctx)
+	inTime, err := n.InTime.Get(ctx)
 	if err != nil {
 		return err
 	}
