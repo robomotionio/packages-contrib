@@ -1,4 +1,4 @@
-package nodes
+package datetime
 
 import (
 	"time"
@@ -11,10 +11,10 @@ type Format struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Format,name=Format Time,icon=mdiTimelineText,color=#77AF38"`
 
 	//Input
-	InTime runtime.InVariable `spec:"title=Time,type=string,scope=Custom,messageScope,customScope,format=datetime"`
+	InTime runtime.InVariable[string] `spec:"title=Time,type=string,scope=Custom,messageScope,customScope,format=datetime"`
 
 	//Output
-	OutFormattedTime runtime.OutVariable `spec:"title=Formatted Time,type=string,scope=Message,name=time,messageScope,customScope"`
+	OutFormattedTime runtime.OutVariable[string] `spec:"title=Formatted Time,type=string,scope=Message,name=time,messageScope,customScope"`
 
 	//Options
 	OptInLayout  string `spec:"title=In Layout,value=RFC3339,enum=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,enumNames=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,option"`
@@ -38,7 +38,7 @@ func (n *Format) OnMessage(ctx message.Context) error {
 		outLayout = time.RFC3339
 	}
 
-	inTime, err := n.InTime.GetString(ctx)
+	inTime, err := n.InTime.Get(ctx)
 	if err != nil {
 		return err
 	}

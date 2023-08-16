@@ -1,4 +1,4 @@
-package nodes
+package datetime
 
 import (
 	"time"
@@ -13,7 +13,7 @@ type Now struct {
 	//Input
 
 	//Output
-	OutNow runtime.OutVariable `spec:"title=Time,type=string,scope=Message,name=now,messageScope,customScope"`
+	OutNow runtime.OutVariable[string] `spec:"title=Time,type=string,scope=Message,name=now,messageScope,customScope"`
 
 	//Options
 	OptLayout string `spec:"title=Layout,value=RFC3339,enum=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,enumNames=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,option"`
