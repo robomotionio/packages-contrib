@@ -1,0 +1,45 @@
+{
+  "name": "Todoist",
+  "namespace": "Robomotion.Todoist",
+  "version": "0.0.1",
+  "categories": ["Productivity"],
+  "description": "Connects to Todoist and does project and task operations.",
+  "icon": "icon.png",
+  "keywords": [
+    "project",
+    "task",
+    "management"
+  ],
+  "language": "Go",
+  "platforms": [
+    "linux",
+    "windows",
+    "darwin"
+  ],
+  "author": {
+    "email": "support@robomotion.io",
+    "name": "Robomotion"
+  },
+  "scripts": {
+    "windows": {
+      "build": [
+        "go build -o dist/robomotion-todoist.exe"
+
+      ],
+      "run": "robomotion-todoist.exe"
+    },
+    "linux": {
+      "build": [
+        "go build -o dist/robomotion-todoist"
+
+      ],
+      "run": "robomotion-todoist"
+    },
+    "darwin": {
+      "build": [
+        "go build -o dist/robomotion-todoist"
+      ],
+      "run": "robomotion-todoist"
+    }
+  }
+}
