@@ -1,0 +1,44 @@
+{
+	"name": "Google Natural Language",
+	"namespace": "Robomotion.GoogleNaturalLanguage",
+	"version": "0.0.1",
+	"categories": ["Productivity"],
+	"description": "Provides natural language understanding technologies, such as sentiment analysis, entity recognition, entity sentiment analysis, and other text annotations.)",
+	"icon": "icon.png",
+	"keywords": [
+		"natural",
+		"language",
+		"processing"
+		
+	],
+	"language": "Go",
+	"platforms": [
+		"linux",
+		"windows",
+		"darwin"
+	],
+	"author": {
+		"email": "support@robomotion.io",
+		"name": "Robomotion"
+	},
+	"scripts": {
+		"windows": {
+			"build": [
+				"go build -o dist/robomotion-language.exe"
+			],
+			"run": "robomotion-language.exe"
+		},
+		"linux": {
+			"build": [
+				"go build -o dist/robomotion-language"
+			],
+			"run": "robomotion-language"
+		},
+		"darwin": {
+			"build": [
+				"go build -o dist/robomotion-language"
+			],
+			"run": "robomotion-language"
+		}
+	}
+}
