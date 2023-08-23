@@ -62,18 +62,6 @@ func (n *AnalyzeEntities) OnMessage(ctx message.Context) error {
 		log.Fatalf("Failed to analyze entities: %v", err)
 	}
 
-	for _, entity := range resp.Entities {
-		fmt.Printf("Entity: %v\n", entity.Name)
-		fmt.Printf("Type: %v\n", entity.Type)
-		fmt.Printf("Salience: %v\n", entity.Salience)
-		fmt.Printf("Mentions:\n")
-		for _, mention := range entity.Mentions {
-			fmt.Printf("\tText: %v\n", mention.Text.Content)
-			fmt.Printf("\tType: %v\n", mention.Type)
-		}
-		fmt.Println("--------------------")
-	}
-
 	return n.OutEntites.Set(ctx, resp.Entities)
 }
 
