@@ -1,0 +1,38 @@
+{
+    "author": {
+		"name": "Robomotion",
+		"email": "support@robomotion.io"
+	},
+    "category": 4,
+    "description": "Pipedrive integration",
+    "icon": "icon.png",
+    "keywords": ["pipedrive", "sales", "rpa"],
+	"language": "Python", 
+	"name": "Pipedrive",
+    "namespace": "Robomotion.Pipedrive",
+    "platforms": ["windows", "linux", "darwin"],
+    "scripts": {
+        "windows": {
+          "build": [
+            "pyinstaller --onefile main.py -n robomotion-pipedrive.exe",
+		"cp LICENSE dist/"
+          ],
+            "run": "robomotion-pipedrive.exe"
+        },
+        "linux": {
+          "build": [
+            "pyinstaller --onefile main.py -n robomotion-pipedrive",
+		"cp LICENSE dist/"
+          ],
+            "run": "robomotion-pipedrive"
+        },
+        "darwin": {
+          "build": [
+            "pyinstaller --onefile main.py -n robomotion-pipedrive",
+		"cp LICENSE dist/"
+          ],
+            "run": "robomotion-pipedrive"
+        }
+    },
+    "version": "0.0.1"
+}
