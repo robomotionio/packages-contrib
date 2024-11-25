@@ -1,4 +1,7 @@
 {
+	"name": "Github",
+	"namespace": "Robomotion.Github",
+	"version": "0.0.2",
 	"author": {
 		"name": "Robomotion",
 		"email": "support@robomotion.io"
@@ -8,8 +11,6 @@
 	"icon": "icon.png",
 	"keywords": ["robomotion", "rpa", "Github", "plugin"],
 	"language": "C#",
-	"name": "Github",
-	"namespace": "Robomotion.Github",
 	"platforms": ["windows", "linux", "darwin"],
 	"scripts": {
 		"windows": {
@@ -33,6 +34,5 @@
 			],
 			"run": "robomotion-github"
 		}
-	},
-	"version": "0.0.2"
+	}
 }
