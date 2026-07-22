@@ -1,4 +1,4 @@
-package nodes
+package datetime
 
 import (
 	"time"
@@ -11,10 +11,10 @@ type Leap struct {
 	runtime.Node `spec:"id=Robomotion.DateTime.Leap,name=Is Leap Year,icon=mdiCalendarStar,color=#77AF38"`
 
 	//Input
-	InTime runtime.InVariable `spec:"title=Date,type=string,scope=Custom,customScope,format=date"`
+	InTime runtime.InVariable[string] `spec:"title=Date,type=string,scope=Custom,customScope,format=date"`
 
 	//Output
-	OutIsLeap runtime.OutVariable `spec:"title=Is Leap,type=boolean,scope=Message,name=leap,messageScope,customScope"`
+	OutIsLeap runtime.OutVariable[bool] `spec:"title=Is Leap,type=boolean,scope=Message,name=leap,messageScope,customScope"`
 
 	//Options
 	OptLayout string `spec:"title=Layout,value=RFC3339,enum=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,enumNames=ANSIC|UnixDate|RubyDate|RFC822|RFC822Z|RFC850|RFC1123|RFC1123Z|RFC3339|RFC3339Nano,option"`
@@ -32,7 +32,7 @@ func (n *Leap) OnMessage(ctx message.Context) error {
 		layout = time.RFC3339
 	}
 
-	inTime, err := n.InTime.GetString(ctx)
+	inTime, err := n.InTime.Get(ctx)
 	if err != nil {
 		return err
 	}

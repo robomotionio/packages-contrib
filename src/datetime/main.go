@@ -1,7 +1,7 @@
 package main
 
 import (
-	"datetime/nodes"
+	"datetime/v1"
 
 	"github.com/robomotionio/robomotion-go/runtime"
 )
@@ -9,12 +9,12 @@ import (
 func main() {
 
 	runtime.RegisterNodes(
-		&nodes.Add{},
-		&nodes.Format{},
-		&nodes.Now{},
-		&nodes.Span{},
-		&nodes.Leap{},
-		&nodes.Split{},
+		&datetime.Add{},
+		&datetime.Format{},
+		&datetime.Now{},
+		&datetime.Span{},
+		&datetime.Leap{},
+		&datetime.Split{},
 	)
 
 	runtime.Start()

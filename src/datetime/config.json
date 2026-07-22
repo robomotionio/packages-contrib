@@ -1,8 +1,8 @@
 {
 	"name": "Date Time",
 	"namespace": "Robomotion.DateTime",
-	"version": "0.0.2",
-	"category": 6,
+	"version": "0.0.3",
+	"categories": ["Dev Tools"],
 	"description": "Date time functions and conversions. Icons made by [Vectors Market](https://www.flaticon.com/authors/vectors-market) from [Flaticon](www.flaticon.com/)",
 	"icon": "icon.png",
 	"keywords": [
@@ -24,19 +24,22 @@
 	"scripts": {
 		"windows": {
 			"build": [
-				"go build -o dist/robomotion-datetime.exe"
+				"go build -o dist/robomotion-datetime.exe",
+				"cp LICENSE dist/LICENSE"
 			],
 			"run": "robomotion-datetime.exe"
 		},
 		"linux": {
 			"build": [
-				"go build -o dist/robomotion-datetime"
+				"go build -o dist/robomotion-datetime",
+				"cp LICENSE dist/LICENSE"
 			],
 			"run": "robomotion-datetime"
 		},
 		"darwin": {
 			"build": [
-				"go build -o dist/robomotion-datetime"
+				"go build -o dist/robomotion-datetime",
+				"cp LICENSE dist/LICENSE"
 			],
 			"run": "robomotion-datetime"
 		}
