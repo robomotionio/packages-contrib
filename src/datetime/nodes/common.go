@@ -14,5 +14,6 @@ var (
 		"RFC1123Z":    time.RFC1123Z,
 		"RFC3339":     time.RFC3339,
 		"RFC3339Nano": time.RFC3339Nano,
+		"Kitchen":     time.Kitchen,
 	}
 )
