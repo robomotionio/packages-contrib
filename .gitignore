@@ -7,4 +7,5 @@ repo
 *.pspec
 index.json
 index.sha256sum
+.DS_Store
 
